@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>PX to VW Range Calculator with Preview</title>
+        <style>
+            body {
+                font-family: system-ui, sans-serif;
+                padding: 20px;
+                max-width: 100%;
+                margin: auto;
+            }
+            label {
+                display: block;
+                margin: 10px 0 5px;
+            }
+            input,
+            button {
+                width: 100%;
+                padding: 10px;
+                font-size: 14px;
+                margin-bottom: 15px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+            }
+            button {
+                background: #4f46e5;
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+            button:hover {
+                background: #4338ca;
+            }
+            .checkbox {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 15px;
+            }
+            .result {
+                padding: 12px;
+                background: #f9fafb;
+                border: 1px solid #e5e7eb;
+                border-radius: 6px;
+                font-weight: bold;
+                white-space: pre-line;
+                margin-bottom: 20px;
+            }
+            .preview-box {
+                width: 100%;
+                background: #dbeafe;
+                border: 2px solid #3b82f6;
+                border-radius: 6px;
+                text-align: center;
+                padding: 20px;
+                transition: all 0.2s ease;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>PX → VW Range Calculator with Preview</h2>
+
+        <label for="minPx">Min value in px:</label>
+        <input type="number" id="minPx" placeholder="e.g. 16" />
+
+        <div class="max-value-px-container">
+            <label for="maxPx">Max value in px:</label>
+            <input type="number" id="maxPx" placeholder="e.g. 24" />
+        </div>
+
+        <label for="viewportMin">Min viewport width (px):</label>
+        <input type="number" id="viewportMin" placeholder="e.g. 1025" />
+
+        <label for="viewportMax">Max viewport width (px):</label>
+        <input type="number" id="viewportMax" placeholder="e.g. 1440" />
+
+        <div class="checkbox">
+            <input type="checkbox" id="autoMax" />
+            <label for="autoMax">Use only min value (auto-calculate max)</label>
+        </div>
+
+        <button onclick="convert()">Convert</button>
+
+        <div class="result" id="result">Result will appear here</div>
+
+        <div class="preview-box" id="preview">Resize your browser to preview</div>
+
+        <script>
+            const maxContainer = document.querySelector(".max-value-px-container");
+            const autoMaxCheckbox = document.getElementById("autoMax");
+
+            function toggleMaxContainer() {
+                maxContainer.style.display = autoMaxCheckbox.checked ? "none" : "";
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                // set initial visibility
+                toggleMaxContainer();
+                // toggle when checkbox changes
+                autoMaxCheckbox.addEventListener("change", toggleMaxContainer);
+            });
+
+            function convert() {
+                const minPx = parseFloat(document.getElementById("minPx").value);
+                let maxPx = parseFloat(document.getElementById("maxPx").value);
+                const minVw = parseFloat(document.getElementById("viewportMin").value);
+                const maxVw = parseFloat(document.getElementById("viewportMax").value);
+                const useAutoMax = document.getElementById("autoMax").checked;
+
+                if (!minPx || !minVw || !maxVw) {
+                    document.getElementById("result").innerText =
+                        "⚠️ Please enter valid numbers.";
+                    return;
+                }
+
+                if (useAutoMax) {
+                    // Calculate maxPx from minPx based on ratio of viewport widths
+                    maxPx = (minVw / maxVw) * minPx;
+                }
+
+                if (!maxPx) {
+                    document.getElementById("result").innerText =
+                        "⚠️ Please enter a valid max value or enable auto mode.";
+                    return;
+                }
+
+                const minVW = (minPx / minVw) * 100;
+                const maxVW = (maxPx / maxVw) * 100;
+
+                const fluid = `calc(${minVW.toFixed(4)}vw + ${(maxVW - minVW).toFixed(
+                    4
+                )} * ((100vw - ${minVw}px) / (${maxVw - minVw})))`;
+                const clampFormula = `clamp(${minVW.toFixed(
+                    4
+                )}vw, ${fluid}, ${maxVW.toFixed(4)}vw)`;
+
+                document.getElementById("result").innerText =
+                    `${minPx}px @ ${minVw}px viewport = ${minVW.toFixed(4)}vw\n` +
+                    `${maxPx}px @ ${maxVw}px viewport = ${maxVW.toFixed(4)}vw\n\n` +
+                    `Fluid formula:\n${fluid}\n\nClamp formula:\n${clampFormula}`;
+
+                const preview = document.getElementById("preview");
+                preview.style.fontSize = clampFormula;
+                preview.innerText = `Live preview → font-size: ${clampFormula}`;
+            }
+        </script>
+    </body>
+</html>
