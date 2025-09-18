@@ -49,4 +49,5 @@ This is a simple calculator web application for generating fluid type scale (cla
 Open `index.html` in your browser to use the calculator.
 
 ## License
-MIT License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
